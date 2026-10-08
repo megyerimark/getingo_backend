@@ -21,35 +21,78 @@ class CompanionService
         'cyber' => ['name' => 'Cyber Deck', 'premium' => true],
     ];
 
-    private const SKINS = [
-        'code-kitten-3d' => [
-            'name' => 'Getingo Cica',
-            'premium' => false,
-            'species' => 'cat',
-            'image' => '/mascots/getingo-cat.webp',
-            'description' => 'Az alap Getingo társ: kíváncsi, barátságos és mindenki számára elérhető.',
-        ],
-        'getingo-dragon' => [
-            'name' => 'Kis Sárkány',
-            'premium' => true,
-            'species' => 'dragon',
-            'image' => '/mascots/getingo-dragon.webp',
-            'description' => 'Premium társ apró szárnyakkal és látványos, játékos megjelenéssel.',
-        ],
-        'getingo-puppy' => [
-            'name' => 'Kiskutya',
-            'premium' => true,
-            'species' => 'dog',
-            'image' => '/mascots/getingo-puppy.webp',
-            'description' => 'Premium társ puha, barátságos stílussal és vidám reakciókkal.',
-        ],
-    ];
+private const SKINS = [
+    'getingo-mouse' => [
+        'name' => 'Getingo Egér',
+        'premium' => false,
+        'species' => 'mouse',
+        'image' => '/mascots/getingo-mouse.png',
+        'model_url' => '/models/getingo-buddies/getingo-mouse.glb',
+        'description' => 'A Getingo alap Buddyja: kíváncsi, lelkes és minden felhasználó számára elérhető.',
+        'personality' => 'Kíváncsi',
+        'signature' => 'Tanulási szikra',
+        'accent' => '#f59e0b',
+    ],
 
-    private const LEGACY_SKIN_MAP = [
-        'arctic-byte' => 'code-kitten-3d',
-        'neon-orbit' => 'getingo-dragon',
-        'royal-circuit' => 'getingo-puppy',
-    ];
+    'getingo-sloth' => [
+        'name' => 'Getingo Lajhár',
+        'premium' => true,
+        'species' => 'sloth',
+        'image' => '/mascots/getingo-sloth.png',
+        'model_url' => '/models/getingo-buddies/getingo-sloth.glb',
+        'description' => 'Nyugodt Premium Buddy, aki a fókuszált, kiegyensúlyozott tanulást képviseli.',
+        'personality' => 'Nyugodt',
+        'signature' => 'Deep Focus',
+        'accent' => '#a16207',
+    ],
+
+    'getingo-reindeer' => [
+        'name' => 'Noel Rénszarvas',
+        'premium' => true,
+        'species' => 'reindeer',
+        'image' => '/mascots/getingo-reindeer.png',
+        'model_url' => '/models/getingo-buddies/getingo-reindeer.glb',
+        'description' => 'Energikus Premium Buddy különleges Evolution effektekkel és ünnepi személyiséggel.',
+        'personality' => 'Lelkes',
+        'signature' => 'Aurora Dash',
+        'accent' => '#ef4444',
+    ],
+
+    'getingo-shark' => [
+        'name' => 'Getingo Cápa',
+        'premium' => true,
+        'species' => 'shark',
+        'image' => '/mascots/getingo-shark.png',
+        'model_url' => '/models/getingo-buddies/getingo-shark.glb',
+        'description' => 'Határozott Premium társ azoknak, akik szeretnek lendületben maradni.',
+        'personality' => 'Bátor',
+        'signature' => 'Cyber Surge',
+        'accent' => '#0891b2',
+    ],
+
+    'getingo-dragon' => [
+        'name' => 'Kis Sárkány',
+        'premium' => true,
+        'species' => 'dragon',
+        'image' => '/mascots/getingo-dragon.png',
+        'model_url' => '/models/getingo-buddies/getingo-dragon.glb',
+        'description' => 'Játékos Premium Buddy látványos aurával és különleges Signature reakcióval.',
+        'personality' => 'Tüzes',
+        'signature' => 'Dragon Burst',
+        'accent' => '#8b5cf6',
+    ],
+];
+
+private const LEGACY_SKIN_MAP = [
+    'code-kitten' => 'getingo-mouse',
+    'code-kitten-3d' => 'getingo-mouse',
+    'arctic-byte' => 'getingo-mouse',
+
+    'neon-orbit' => 'getingo-dragon',
+
+    'getingo-puppy' => 'getingo-sloth',
+    'royal-circuit' => 'getingo-sloth',
+];
 
     private const ACTIONS = [
         'water' => [
@@ -102,7 +145,7 @@ class CompanionService
                 'water' => 74,
                 'hunger' => 72,
                 'happiness' => 78,
-                'selected_skin' => 'code-kitten-3d',
+                'selected_skin' => 'getingo-mouse',
                 'selected_room' => 'studio',
                 'last_decay_at' => now(),
             ]
@@ -171,22 +214,31 @@ class CompanionService
     {
         $companion ??= $this->getOrCreate($user);
 
-        $normalizedSkin = self::LEGACY_SKIN_MAP[$companion->selected_skin] ?? $companion->selected_skin;
+/*         $normalizedSkin = self::LEGACY_SKIN_MAP[$companion->selected_skin] ?? $companion->selected_skin;
         if (! array_key_exists($normalizedSkin, self::SKINS)) {
             $normalizedSkin = 'code-kitten-3d';
-        }
+        } */
+       if (! array_key_exists($normalizedSkin, self::SKINS)) {
+    $normalizedSkin = 'getingo-mouse';
+}
         if ($normalizedSkin !== $companion->selected_skin) {
             $companion->selected_skin = $normalizedSkin;
             $companion->save();
         }
 
-        if (! $user->is_premium
+/*         if (! $user->is_premium
             && isset(self::SKINS[$companion->selected_skin])
             && self::SKINS[$companion->selected_skin]['premium']) {
             $companion->selected_skin = 'code-kitten-3d';
             $companion->save();
         }
-
+ */
+if (! $user->is_premium
+    && isset(self::SKINS[$companion->selected_skin])
+    && self::SKINS[$companion->selected_skin]['premium']) {
+    $companion->selected_skin = 'getingo-mouse';
+    $companion->save();
+}
         if (! $user->is_premium
             && isset(self::ROOMS[$companion->selected_room])
             && self::ROOMS[$companion->selected_room]['premium']) {
@@ -218,23 +270,28 @@ class CompanionService
                 'selected_room' => $companion->selected_room ?? 'studio',
                 'last_interaction_at' => $companion->last_interaction_at,
             ],
-           /*  'growth' => $growth,
+        /*  'growth' => $growth,
             'mood' => $mood,
             'xp_points' => $xp, */
             'mood' => $mood,
             'behavior' => $behavior,
             'xp_points' => $xp,
-            'available_skins' => collect(self::SKINS)
-                ->map(fn (array $skin, string $key) => [
-                    'key' => $key,
-                    'name' => $skin['name'],
-                    'premium' => $skin['premium'],
-                    'species' => $skin['species'],
-                    'image' => $skin['image'],
-                    'description' => $skin['description'],
-                    'unlocked' => ! $skin['premium'] || $user->is_premium,
-                ])
-                ->values(),
+            'growth' => $growth,
+        'available_skins' => collect(self::SKINS)
+    ->map(fn (array $skin, string $key) => [
+        'key' => $key,
+        'name' => $skin['name'],
+        'premium' => $skin['premium'],
+        'species' => $skin['species'],
+        'image' => $skin['image'],
+        'model_url' => $skin['model_url'],
+        'description' => $skin['description'],
+        'personality' => $skin['personality'],
+        'signature' => $skin['signature'],
+        'accent' => $skin['accent'],
+        'unlocked' => ! $skin['premium'] || $user->is_premium,
+    ])
+    ->values(),
             'available_rooms' => collect(self::ROOMS)
                 ->map(fn (array $room, string $key) => [
                     'key' => $key,

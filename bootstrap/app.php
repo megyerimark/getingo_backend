@@ -24,6 +24,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(RejectOversizedRequests::class);
         $middleware->append(SecurityHeaders::class);
         $middleware->statefulApi();
+        $middleware->validateCsrfTokens(except: [
+        'stripe/*',
+    ]);
 
         $trustedHosts = array_values(array_filter(array_map(
             'trim',
