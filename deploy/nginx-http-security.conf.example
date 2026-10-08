@@ -1,0 +1,5 @@
+# Ezt az nginx.conf `http { ... }` blokkjába tedd, nem a server blokkba.
+# Alkalmazás-szintű DDoS védelem kiegészítése; nagy támadáshoz CDN/WAF is szükséges.
+limit_req_zone $binary_remote_addr zone=getingo_general:20m rate=15r/s;
+limit_req_zone $binary_remote_addr zone=getingo_auth:10m rate=10r/m;
+limit_conn_zone $binary_remote_addr zone=getingo_conn:10m;
