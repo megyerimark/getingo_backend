@@ -210,108 +210,117 @@ private const LEGACY_SKIN_MAP = [
         });
     }
 
-    public function state(User $user, ?UserCompanion $companion = null): array
-    {
-        $companion ??= $this->getOrCreate($user);
+public function state(User $user, ?UserCompanion $companion = null): array
+{
+    $companion ??= $this->getOrCreate($user);
 
-/*         $normalizedSkin = self::LEGACY_SKIN_MAP[$companion->selected_skin] ?? $companion->selected_skin;
-        if (! array_key_exists($normalizedSkin, self::SKINS)) {
-            $normalizedSkin = 'code-kitten-3d';
-        } */
-       if (! array_key_exists($normalizedSkin, self::SKINS)) {
-    $normalizedSkin = 'getingo-mouse';
-}
-        if ($normalizedSkin !== $companion->selected_skin) {
-            $companion->selected_skin = $normalizedSkin;
-            $companion->save();
-        }
+    // Régi Buddy azonosítók átvezetése az új rendszerbe.
+    $normalizedSkin = self::LEGACY_SKIN_MAP[$companion->selected_skin]
+        ?? $companion->selected_skin;
 
-/*         if (! $user->is_premium
-            && isset(self::SKINS[$companion->selected_skin])
-            && self::SKINS[$companion->selected_skin]['premium']) {
-            $companion->selected_skin = 'code-kitten-3d';
-            $companion->save();
-        }
- */
-if (! $user->is_premium
-    && isset(self::SKINS[$companion->selected_skin])
-    && self::SKINS[$companion->selected_skin]['premium']) {
-    $companion->selected_skin = 'getingo-mouse';
-    $companion->save();
-}
-        if (! $user->is_premium
-            && isset(self::ROOMS[$companion->selected_room])
-            && self::ROOMS[$companion->selected_room]['premium']) {
-            $companion->selected_room = 'studio';
-            $companion->save();
-        }
-
-        $this->applyDecay($companion);
-        $companion->refresh();
-
-        $xp = (int) $user->xp_points;
-        $knowledgeGrowth = intdiv($xp, 2);
-        $careGrowth = (int) $companion->growth_points;
-        $totalGrowth = $knowledgeGrowth + $careGrowth;
-        $growth = $this->growthForPoints($totalGrowth, $knowledgeGrowth, $careGrowth);
-        $mood = $this->moodForCompanion($companion);
-        $behavior = $this->behaviorForCompanion($companion);
-
-        return [
-            'companion' => [
-                'id' => $companion->id,
-                'name' => $companion->name,
-                'care_points' => $companion->care_points,
-                'growth_points' => $companion->growth_points,
-                'water' => $companion->water,
-                'hunger' => $companion->hunger,
-                'happiness' => $companion->happiness,
-                'selected_skin' => $companion->selected_skin,
-                'selected_room' => $companion->selected_room ?? 'studio',
-                'last_interaction_at' => $companion->last_interaction_at,
-            ],
-        /*  'growth' => $growth,
-            'mood' => $mood,
-            'xp_points' => $xp, */
-            'mood' => $mood,
-            'behavior' => $behavior,
-            'xp_points' => $xp,
-            'growth' => $growth,
-        'available_skins' => collect(self::SKINS)
-    ->map(fn (array $skin, string $key) => [
-        'key' => $key,
-        'name' => $skin['name'],
-        'premium' => $skin['premium'],
-        'species' => $skin['species'],
-        'image' => $skin['image'],
-        'model_url' => $skin['model_url'],
-        'description' => $skin['description'],
-        'personality' => $skin['personality'],
-        'signature' => $skin['signature'],
-        'accent' => $skin['accent'],
-        'unlocked' => ! $skin['premium'] || $user->is_premium,
-    ])
-    ->values(),
-            'available_rooms' => collect(self::ROOMS)
-                ->map(fn (array $room, string $key) => [
-                    'key' => $key,
-                    'name' => $room['name'],
-                    'premium' => $room['premium'],
-                    'unlocked' => ! $room['premium'] || $user->is_premium,
-                ])
-                ->values(),
-            'actions' => collect(self::ACTIONS)
-                ->map(fn (array $config, string $key) => [
-                    'key' => $key,
-                    'label' => $config['label'],
-                    'cost' => $config['cost'],
-                    'boost' => $config['boost'],
-                    'growth' => $config['growth'],
-                ])
-                ->values(),
-        ];
+    // Ha olyan skin van az adatbázisban, amit már nem ismerünk,
+    // visszaállítjuk az ingyenes egérre.
+    if (! array_key_exists($normalizedSkin, self::SKINS)) {
+        $normalizedSkin = 'getingo-mouse';
     }
 
+    if ($normalizedSkin !== $companion->selected_skin) {
+        $companion->selected_skin = $normalizedSkin;
+        $companion->save();
+    }
+
+    // Nem Premium felhasználó nem használhat Premium Buddyt.
+    if (
+        ! $user->is_premium
+        && isset(self::SKINS[$companion->selected_skin])
+        && self::SKINS[$companion->selected_skin]['premium']
+    ) {
+        $companion->selected_skin = 'getingo-mouse';
+        $companion->save();
+    }
+
+    // Nem Premium felhasználó nem használhat Premium szobát.
+    if (
+        ! $user->is_premium
+        && isset(self::ROOMS[$companion->selected_room])
+        && self::ROOMS[$companion->selected_room]['premium']
+    ) {
+        $companion->selected_room = 'studio';
+        $companion->save();
+    }
+
+    $this->applyDecay($companion);
+    $companion->refresh();
+
+    $xp = (int) $user->xp_points;
+    $knowledgeGrowth = intdiv($xp, 2);
+    $careGrowth = (int) $companion->growth_points;
+    $totalGrowth = $knowledgeGrowth + $careGrowth;
+
+    $growth = $this->growthForPoints(
+        $totalGrowth,
+        $knowledgeGrowth,
+        $careGrowth
+    );
+
+    $mood = $this->moodForCompanion($companion);
+    $behavior = $this->behaviorForCompanion($companion);
+
+    return [
+        'companion' => [
+            'id' => $companion->id,
+            'name' => $companion->name,
+            'care_points' => $companion->care_points,
+            'growth_points' => $companion->growth_points,
+            'water' => $companion->water,
+            'hunger' => $companion->hunger,
+            'happiness' => $companion->happiness,
+            'selected_skin' => $companion->selected_skin,
+            'selected_room' => $companion->selected_room ?? 'studio',
+            'last_interaction_at' => $companion->last_interaction_at,
+        ],
+
+        'growth' => $growth,
+        'mood' => $mood,
+        'behavior' => $behavior,
+        'xp_points' => $xp,
+
+        'available_skins' => collect(self::SKINS)
+            ->map(fn (array $skin, string $key) => [
+                'key' => $key,
+                'name' => $skin['name'],
+                'premium' => $skin['premium'],
+                'species' => $skin['species'],
+                'image' => $skin['image'],
+                'model_url' => $skin['model_url'],
+                'description' => $skin['description'],
+                'personality' => $skin['personality'],
+                'signature' => $skin['signature'],
+                'accent' => $skin['accent'],
+                'unlocked' => ! $skin['premium'] || $user->is_premium,
+            ])
+            ->values(),
+
+        'available_rooms' => collect(self::ROOMS)
+            ->map(fn (array $room, string $key) => [
+                'key' => $key,
+                'name' => $room['name'],
+                'premium' => $room['premium'],
+                'unlocked' => ! $room['premium'] || $user->is_premium,
+            ])
+            ->values(),
+
+        'actions' => collect(self::ACTIONS)
+            ->map(fn (array $config, string $key) => [
+                'key' => $key,
+                'label' => $config['label'],
+                'cost' => $config['cost'],
+                'boost' => $config['boost'],
+                'growth' => $config['growth'],
+            ])
+            ->values(),
+    ];
+}
 
     public function updatePreferences(User $user, ?string $room, ?string $skin): array
     {
