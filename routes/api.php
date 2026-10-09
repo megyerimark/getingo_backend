@@ -36,6 +36,7 @@ use App\Http\Controllers\StudentDashboardController;
 use App\Http\Controllers\StripeWebhookController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BugReportController;
+use App\Http\Controllers\Admin\AdminBugReportController;
 
 
 Route::middleware('throttle:public-api')->group(function () {
@@ -184,4 +185,14 @@ Route::middleware([
     Route::apiResource('projects', AdminProjectController::class);
     Route::apiResource('quizzes', AdminQuizController::class);
     Route::apiResource('categories', AdminCategoryController::class);
+
+    Route::get('/bug-reports/unread-count', [AdminBugReportController::class, 'unreadCount']);
+    Route::post('/bug-reports/mark-all-seen', [AdminBugReportController::class, 'markAllSeen']);
+    Route::get('/bug-reports', [AdminBugReportController::class, 'index']);
+    Route::get('/bug-reports/{bugReport}', [AdminBugReportController::class, 'show'])
+        ->whereNumber('bugReport');
+    Route::patch('/bug-reports/{bugReport}', [AdminBugReportController::class, 'update'])
+        ->whereNumber('bugReport');
+    Route::get('/bug-reports/{bugReport}/screenshot', [AdminBugReportController::class, 'screenshot'])
+        ->whereNumber('bugReport');
 });
