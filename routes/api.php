@@ -35,6 +35,8 @@ use App\Http\Controllers\Student\ProjectController;
 use App\Http\Controllers\StudentDashboardController;
 use App\Http\Controllers\StripeWebhookController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\BugReportController;
+
 
 Route::middleware('throttle:public-api')->group(function () {
     Route::get('/home', [HomeController::class, 'index']);
@@ -82,6 +84,7 @@ Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 've
 
 Route::middleware(['auth:sanctum', 'active', 'throttle:user-api', 'no-store'])->group(function () {
     Route::get('/user', [AuthController::class, 'me']);
+    Route::post('/bug-reports', [BugReportController::class, 'store']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::get('/billing/status', [BillingController::class, 'status']);

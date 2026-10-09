@@ -8,14 +8,18 @@ use Symfony\Component\HttpFoundation\Response;
 
 class RejectOversizedRequests
 {
-    public function handle(Request $request, Closure $next): Response
+public function handle(Request $request, Closure $next): Response
     {
-        $maxBytes = (int) config('security.max_request_bytes', 1048576);
-        $contentLength = (int) $request->server('CONTENT_LENGTH', 0);
+        $maxBytes = 8 * 1024 * 1024;
+
+        $contentLength = (int) $request->server(
+            'CONTENT_LENGTH',
+            0
+        );
 
         if ($contentLength > $maxBytes) {
             return response()->json([
-                'message' => 'A kérés túl nagy.',
+                'message' => 'A kérés túl nagy. Maximum 5 MB-os képernyőkép tölthető fel.',
             ], 413);
         }
 
