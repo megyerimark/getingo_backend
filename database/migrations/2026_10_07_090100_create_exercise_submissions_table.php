@@ -8,6 +8,9 @@ return new class extends Migration
 {
     public function up(): void
     {
+     /*    if (Schema::hasTable('exercise_submissions')) {
+        return;
+    }
         Schema::create('exercise_submissions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
@@ -19,7 +22,7 @@ return new class extends Migration
             $table->timestamps();
             $table->unique(['user_id', 'exercise_id']);
             $table->index(['user_id', 'completed_at']);
-        });
+        }); */
     }
 
     public function down(): void
